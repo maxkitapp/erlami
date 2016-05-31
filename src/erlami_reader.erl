@@ -86,6 +86,17 @@ dispatch_message(ErlamiClient, Response, true, false, _Original) ->
 dispatch_message(ErlamiClient, Event, false, true, _Original) ->
     erlami_client:process_event(ErlamiClient, {event, Event});
 
+dispatch_message(ErlamiClient, Message, true, true, Original) ->
+    E = erlami_message:get(Message, "event"),
+    case E of
+        {ok,"OriginateResponse"}->
+            erlami_client:process_event(ErlamiClient, {event, Message});
+        _->
+            lager:error(
+                "Unknown message: ~p -> ~p", [Original, erlami_message:to_list(Message)]
+            )
+    end;
+
 dispatch_message(_ErlamiClient, Message, _IsResponse, _IsEvent, Original) ->
     lager:error(
         "Unknown message: ~p -> ~p", [Original, erlami_message:to_list(Message)]

@@ -236,12 +236,22 @@ receiving({event, Event}, #clientstate{
     name=Name, serverinfo=ServerInfo, connection=Conn,
     actions=Actions, listeners=Listeners
 } = State) ->
-    case erlami_message:get(Event, "actionid") of
-        notfound ->
+    E = erlami_message:get(Event, "event"),
+    A = erlami_message:get(Event, "actionid"),
+    IsOriginate = case E of
+        {ok,"OriginateResponse"} -> true;
+        _ -> false
+    end,
+    case {IsOriginate, A} of
+        {true, _}->
+            % originate response event
+            dispatch_event(Name, Event, Listeners),
+            {next_state, receiving, State};
+        {_, notfound} ->
             % async event
             dispatch_event(Name, Event, Listeners),
             {next_state, receiving, State};
-        {ok, ActionId} ->
+        {_, {ok, ActionId}} ->
             % this one belongs to a response
             case lists:keyfind(ActionId, 1, Actions) of
                 false ->

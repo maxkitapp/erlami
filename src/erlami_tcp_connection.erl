@@ -72,7 +72,9 @@ real_connect([Address|Tail], Port) ->
 %% pattern matching.
 -spec send(Socket::gen_tcp:socket(), Action::erlami_message:action()) -> ok.
 send(Socket, Action) ->
-    ok = gen_tcp:send(Socket, erlami_message:marshall(Action)).
+    Marshall = erlami_message:marshall(Action),
+    Marshall2 = unicode:characters_to_binary(Marshall),
+    ok = gen_tcp:send(Socket, Marshall2).
 
 %% @doc Closes and cleans up the connection.
 -spec close(gen_tcp:socket()) -> ok.

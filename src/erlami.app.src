@@ -17,7 +17,7 @@
     {description,
         "An Asterisk Manager Interface (AMI) client written in erlang"
     },
-    {vsn, git},
+    {vsn, "0.0.1"},
     {registered, []},
     {applications, [
         kernel,

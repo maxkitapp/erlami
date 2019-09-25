@@ -218,7 +218,23 @@ explode_lines(Text) ->
 %% it to a message() so it is suitable to be operated on.
 -spec unmarshall(Text::string()) -> message().
 unmarshall(Text) ->
-    Lines = explode_lines(Text),
+    LinesTemp = explode_lines(Text),
+%%    for AMI "Command" which has some response string without ":"
+%%    add "index:" to Lines for the following processes
+    Lines = lists:zipwith(
+        fun(Index, Line) ->
+            Pos = string:str(Line, ":"),
+            case Pos > 0 of
+               true ->
+                   Line;
+               false ->
+                   integer_to_list(Index) ++":"++Line
+            end
+        end,
+        lists:seq(1, length(LinesTemp)),
+        LinesTemp
+    ),
+
     Message = new_message(),
     lists:foldl(
         fun(Line, Acc) ->
